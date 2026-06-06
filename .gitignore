@@ -1,0 +1,6 @@
+credentials.json
+__pycache__/
+*.pyc
+架電カウンター.app/
+make_icon.py
+*.log

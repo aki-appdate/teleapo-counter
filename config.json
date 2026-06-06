@@ -1,0 +1,25 @@
+{
+  "spreadsheet_id": "1xRv0rNmPh9CltEnmWeicXKAVPeEZedB7BVL2RtLr7jg",
+  "members": [
+    "秋山",
+    "土方",
+    "籾山",
+    "石田",
+    "岩尾"
+  ],
+  "month": "6月度",
+  "column_mapping": {
+    "総コール": "B",
+    "有効": "C",
+    "再コールA": "E",
+    "再コールB": "G",
+    "再コールC": "I",
+    "見込みS": "K",
+    "見込みA": "M",
+    "APアポ": "O",
+    "KTアポ": "Q",
+    "トス": "S"
+  },
+  "data_start_row": 3,
+  "layout_mode": "vertical"
+}
