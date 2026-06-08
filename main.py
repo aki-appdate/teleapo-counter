@@ -101,6 +101,45 @@ class App(tk.Tk):
         self._place_window()
         self._connect()
 
+    # ── リモートconfigをスプシから読み込む ────────────────────────────────────
+    def _fetch_remote_config(self, gc):
+        """スプシの「config」シートからメンバーと月を取得して self.cfg を更新"""
+        try:
+            sid = self.cfg["spreadsheet_id"]
+            ws = gc.open_by_key(sid).worksheet("config")
+            rows = ws.get_all_values()
+            month = ""
+            members = []
+            for row in rows:
+                if not row:
+                    continue
+                key = row[0].strip()
+                if key == "month" and len(row) > 1:
+                    month = row[1].strip()
+                elif key == "members":
+                    # members行以降の B列を全部収集
+                    for r in rows[rows.index(row):]:
+                        if len(r) > 1 and r[1].strip():
+                            members.append(r[1].strip())
+            if month:
+                self.cfg["month"] = month
+            if members:
+                self.cfg["members"] = members
+            return True
+        except Exception as e:
+            print(f"[configシート読込エラー] {e}")
+            return False
+
+    # ── UI再構築（configシート読込後に呼ぶ） ──────────────────────────────────
+    def _rebuild(self):
+        """メンバー・月が更新された後にUIを再描画する"""
+        self._build()
+        self.update_idletasks()
+        w = self.winfo_reqwidth()
+        h = self.winfo_reqheight()
+        self.geometry(f"{w}x{h}")
+        self._place_window()
+
     # ── UI構築 ────────────────────────────────────────────────────────────────
     def _build(self):
         for w in self.winfo_children():
@@ -256,7 +295,14 @@ class App(tk.Tk):
             gc = build_client()
             with self._lock:
                 self.gc = gc
-            self.after(0, lambda: self._set_st("● 接続済", "#27ae60"))
+            self.after(0, lambda: self._set_st("● 設定読込中…", "#e6ac00"))
+            ok = self._fetch_remote_config(gc)
+            if ok:
+                self.after(0, self._rebuild)
+                self.after(0, lambda: self._set_st("● 接続済", "#27ae60"))
+            else:
+                # configシートがなくてもローカル設定で続行
+                self.after(0, lambda: self._set_st("● 接続済（ローカル設定）", "#27ae60"))
         except FileNotFoundError:
             self.after(0, lambda: self._set_st("● credentials.json なし", "#e74c3c"))
         except Exception as e:
